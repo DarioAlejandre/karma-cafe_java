@@ -1,24 +1,21 @@
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-/**
- * Carrito de compras: la lista de productos (bolsas de 250 g) que el cliente
- * lleva y los cálculos de la cuenta.
- *
- * Regla de la tienda: a partir de 4 bolsas en total se aplica un 5% de descuento.
- */
 public class Carrito {
 
-    public static final int BOLSAS_PARA_DESCUENTO = 4;
-    public static final double PORCENTAJE_DESCUENTO = 0.05;
+    public static final int BOLSAS_PARA_GRATIS = 4;
 
     private final List<ItemVenta> items = new ArrayList<ItemVenta>();
 
-    /**
-     * Agrega bolsas al carrito. Si el producto ya está en el carrito,
-     * solo suma la cantidad en la misma línea en vez de repetir el producto.
-     */
     public void agregar(Producto producto, int cantidad) {
+        if (producto == null) {
+            throw new IllegalArgumentException("El producto no puede ser nulo.");
+        }
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+        }
         for (ItemVenta item : items) {
             if (item.getProducto() == producto) {
                 item.setCantidad(item.getCantidad() + cantidad);
@@ -28,7 +25,6 @@ public class Carrito {
         items.add(new ItemVenta(producto, cantidad));
     }
 
-    /** Cuántas bolsas de un producto ya van en el carrito. */
     public int bolsasEnCarrito(Producto producto) {
         for (ItemVenta item : items) {
             if (item.getProducto() == producto) {
@@ -54,33 +50,49 @@ public class Carrito {
         return items;
     }
 
-    /** Total de bolsas de 250 g en el carrito. */
     public int totalBolsas() {
         int total = 0;
         for (ItemVenta item : items) {
-            total = total + item.getCantidad();
+            total += item.getCantidad();
         }
         return total;
+    }
+
+    public int bolsasGratis() {
+        return totalBolsas() / (BOLSAS_PARA_GRATIS + 1);
     }
 
     public double subtotal() {
         double suma = 0;
         for (ItemVenta item : items) {
-            suma = suma + item.subtotal();
+            suma += item.subtotal();
         }
         return suma;
     }
 
-    /** Descuento en dinero (0 si el cliente lleva menos de 4 bolsas). */
-    public double descuento() {
-        if (totalBolsas() >= BOLSAS_PARA_DESCUENTO) {
-            return subtotal() * PORCENTAJE_DESCUENTO;
+    public double bonificacion() {
+        int gratis = bolsasGratis();
+        if (gratis <= 0) {
+            return 0;
         }
-        return 0;
+
+        List<Double> precios = new ArrayList<Double>();
+        for (ItemVenta item : items) {
+            for (int i = 0; i < item.getCantidad(); i++) {
+                precios.add(item.getProducto().getPrecio());
+            }
+        }
+
+        Collections.sort(precios);
+
+        double ahorro = 0;
+        for (int i = 0; i < gratis && i < precios.size(); i++) {
+            ahorro += precios.get(i);
+        }
+        return ahorro;
     }
 
-    /** Lo que el cliente debe pagar. */
     public double total() {
-        return subtotal() - descuento();
+        return subtotal() - bonificacion();
     }
 }
