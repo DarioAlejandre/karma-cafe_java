@@ -1,31 +1,13 @@
 import java.util.Locale;
 import java.util.Scanner;
 
-/**
- * SIMULADOR BÁSICO DE VENTA - Morning Bell Coffee Roasters
- * Bolsas de café de 250 g.
- *
- * Proyecto para el ordinario de Introducción a los Sistemas Computacionales.
- *
- * El programa muestra un menú en la consola para:
- *   1. Ver el catálogo de cafés (todos se venden en bolsas de 250 g).
- *   2. Agregar bolsas al carrito.
- *   3. Ver el carrito con los totales.
- *   4. Quitar un producto del carrito.
- *   5. Pagar: recibe el dinero del cliente, calcula el cambio y saca el recibo.
- *   6. Salir.
- */
 public class Main {
 
     private static final Scanner teclado = new Scanner(System.in);
     private static final String LINEA = "------------------------------------------------------------";
 
-    /** El catálogo de la tienda: 3 cafés, siempre en bolsas de 250 g. */
     private static Producto[] catalogo;
-
     private static final Carrito carrito = new Carrito();
-
-    /** Número de ventas cobradas, para numerar los recibos. */
     private static int ventasRealizadas = 0;
 
     public static void main(String[] args) {
@@ -66,19 +48,17 @@ public class Main {
         teclado.close();
     }
 
-    /* ==================== DATOS INICIALES ==================== */
-
     private static void cargarCatalogo() {
         catalogo = new Producto[3];
-        catalogo[0] = new Producto("House Blend", "Medio", "Chocolate, nuez, panela", 12.50, 20);
-        catalogo[1] = new Producto("Guji Etiopía", "Claro", "Durazno, jazmín, miel", 14.00, 15);
-        catalogo[2] = new Producto("Huila Colombia", "Medio oscuro", "Cacao, caramelo, naranja", 13.50, 18);
+        catalogo[0] = new Producto("House Blend", "Medio", "Chocolate, nuez, panela", 210.00, 20);
+        catalogo[1] = new Producto("Guji Etiopía", "Claro", "Durazno, jazmín, miel", 250.00, 15);
+        catalogo[2] = new Producto("Huila Colombia", "Medio oscuro", "Cacao, caramelo, naranja", 230.00, 18);
     }
 
     private static void mostrarBienvenida() {
         System.out.println();
         System.out.println(LINEA);
-        System.out.println("   MORNING BELL COFFEE ROASTERS");
+        System.out.println("   KARMA CAFÉ");
         System.out.println("   Simulador de venta - bolsas de 250 g");
         System.out.println(LINEA);
     }
@@ -94,8 +74,6 @@ public class Main {
         System.out.println("6. Salir");
     }
 
-    /* ==================== OPCIONES DEL MENÚ ==================== */
-
     private static void mostrarCatalogo() {
         System.out.println();
         System.out.println(LINEA);
@@ -109,8 +87,7 @@ public class Main {
                     + "   |   Disponibles: " + p.getStock() + " bolsas");
         }
         System.out.println(LINEA);
-        System.out.println("A partir de " + Carrito.BOLSAS_PARA_DESCUENTO
-                + " bolsas en total: 5% de descuento.");
+        System.out.println("Promo: por cada 4 bolsas que lleves, la 5.ª bolsa sale gratis.");
     }
 
     private static void agregarAlCarrito() {
@@ -128,7 +105,6 @@ public class Main {
 
         Producto producto = catalogo[numero - 1];
 
-        // Lo que se puede vender = stock real menos lo que ya va en el carrito.
         int disponibles = producto.getStock() - carrito.bolsasEnCarrito(producto);
         if (disponibles <= 0) {
             System.out.println("No quedan bolsas disponibles de " + producto.getNombre() + ".");
@@ -174,14 +150,14 @@ public class Main {
         System.out.println(LINEA);
         System.out.println("Bolsas en total: " + carrito.totalBolsas()
                 + " (" + (carrito.totalBolsas() * 250) + " g)");
-        System.out.println("Subtotal:   " + formato(carrito.subtotal()));
-        if (carrito.descuento() > 0) {
-            System.out.println("Descuento: -" + formato(carrito.descuento()) + " (5%)");
+        System.out.println("Subtotal:        " + formato(carrito.subtotal()));
+        if (carrito.bonificacion() > 0) {
+            System.out.println("Bolsas gratis:   " + carrito.bolsasGratis()
+                    + " (-" + formato(carrito.bonificacion()) + ")");
         } else {
-            System.out.println("Descuento:  " + formato(0) + " (desde "
-                    + Carrito.BOLSAS_PARA_DESCUENTO + " bolsas)");
+            System.out.println("Bolsas gratis:   0 (5.ª bolsa gratis)");
         }
-        System.out.println("TOTAL:      " + formato(carrito.total()));
+        System.out.println("TOTAL:           " + formato(carrito.total()));
         System.out.println(LINEA);
     }
 
@@ -218,7 +194,6 @@ public class Main {
         double total = carrito.total();
         double pagado = 0;
 
-        // Se repite hasta que el cliente pague lo suficiente o cancele con 0.
         while (pagado < total) {
             pagado = leerDecimal("¿Con cuánto paga el cliente? (0 para cancelar): ");
             if (pagado == 0) {
@@ -233,7 +208,6 @@ public class Main {
 
         double cambio = pagado - total;
 
-        // La venta se cerró: ahora sí se descuenta del inventario.
         for (ItemVenta item : carrito.getItems()) {
             item.getProducto().descontarStock(item.getCantidad());
         }
@@ -242,7 +216,7 @@ public class Main {
 
         System.out.println();
         System.out.println("=================== RECIBO ===================");
-        System.out.println(" Morning Bell Coffee Roasters");
+        System.out.println(" Karma Café");
         System.out.println(" Venta #" + ventasRealizadas);
         System.out.println(LINEA);
         for (ItemVenta item : carrito.getItems()) {
@@ -250,25 +224,20 @@ public class Main {
                     + " 250 g .......... " + formato(item.subtotal()));
         }
         System.out.println(LINEA);
-        System.out.println(" Subtotal:   " + formato(carrito.subtotal()));
-        if (carrito.descuento() > 0) {
-            System.out.println(" Descuento: -" + formato(carrito.descuento()));
+        System.out.println(" Subtotal:        " + formato(carrito.subtotal()));
+        if (carrito.bonificacion() > 0) {
+            System.out.println(" Bolsas gratis:   " + carrito.bolsasGratis()
+                    + " (-" + formato(carrito.bonificacion()) + ")");
         }
-        System.out.println(" TOTAL:      " + formato(total));
-        System.out.println(" Pagado:     " + formato(pagado));
-        System.out.println(" Cambio:     " + formato(cambio));
+        System.out.println(" TOTAL:           " + formato(total));
+        System.out.println(" Pagado:          " + formato(pagado));
+        System.out.println(" Cambio:          " + formato(cambio));
         System.out.println("==============================================");
 
         carrito.vaciar();
         System.out.println("Venta registrada y carrito vacío. ¡Gracias!");
     }
 
-    /* ==================== AYUDAS DE ENTRADA Y FORMATO ==================== */
-
-    /**
-     * Pide un número entero y no deja avanzar hasta que se escriba bien.
-     * Así el programa no se cae si alguien escribe "dos" o deja el espacio vacío.
-     */
     private static int leerEntero(String mensaje) {
         while (true) {
             verificarEntrada();
@@ -290,15 +259,11 @@ public class Main {
             try {
                 return Double.parseDouble(texto);
             } catch (NumberFormatException e) {
-                System.out.println("  -> Escribe un monto, por ejemplo 20 o 20.50");
+                System.out.println("  -> Escribe un monto, por ejemplo 200 o 250.50");
             }
         }
     }
 
-    /**
-     * Si ya no hay más líneas para leer (por ejemplo cuando la entrada se
-     * redirige desde un archivo), el programa se despide en vez de fallar.
-     */
     private static void verificarEntrada() {
         if (!teclado.hasNextLine()) {
             System.out.println();
@@ -307,8 +272,7 @@ public class Main {
         }
     }
 
-    /** Da formato al dinero: 12.50 € */
     private static String formato(double valor) {
-        return String.format(Locale.US, "%.2f", valor) + " €";
+        return "$" + String.format(Locale.US, "%.2f", valor) + " MXN";
     }
 }
