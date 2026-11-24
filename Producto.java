@@ -1,8 +1,5 @@
 /**
  * Producto = una bolsa de café de 250 g que la tienda vende.
- *
- * Guarda los datos que se muestran en el catálogo y el stock disponible,
- * que se va descontando cada vez que se paga una venta.
  */
 public class Producto {
 
