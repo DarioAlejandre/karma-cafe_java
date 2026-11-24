@@ -33,13 +33,10 @@ public class Producto {
     public double getPrecio() {
         return precio;
     }
-
-    /** Bolsas de 250 g que quedan en el inventario. */
     public int getStock() {
         return stock;
     }
 
-    /** Llama este método cuando una venta se cobra: baja las bolsas del inventario. */
     public void descontarStock(int bolsas) {
         stock = stock - bolsas;
     }
