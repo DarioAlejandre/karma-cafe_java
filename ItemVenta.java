@@ -1,12 +1,15 @@
-/**
- * ItemVenta = una línea del carrito: un producto + cuántas bolsas de 250 g.
- */
 public class ItemVenta {
 
     private final Producto producto;
     private int cantidad;
 
     public ItemVenta(Producto producto, int cantidad) {
+        if (producto == null) {
+            throw new IllegalArgumentException("El producto no puede ser nulo.");
+        }
+        if (cantidad < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa.");
+        }
         this.producto = producto;
         this.cantidad = cantidad;
     }
@@ -20,10 +23,16 @@ public class ItemVenta {
     }
 
     public void setCantidad(int cantidad) {
+        if (cantidad < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa.");
+        }
         this.cantidad = cantidad;
     }
 
-    /** Lo que cuesta esta línea: precio de la bolsa x número de bolsas. */
+    public double subtotal() {
+        return producto.getPrecio() * cantidad;
+    }
+}
     public double subtotal() {
         return producto.getPrecio() * cantidad;
     }
